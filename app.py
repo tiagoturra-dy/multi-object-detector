@@ -50,7 +50,7 @@ async def detect_objects(file: UploadFile = File(...)):
         detected_items = []
         for result in results:
             for box in result.boxes:
-                x1, y1, x2, y2 = box.xyxy.tolist()
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
                 detected_items.append({
                     "label": model.names[int(box.cls)],
                     "confidence": round(float(box.conf), 2),
