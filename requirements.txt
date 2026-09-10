@@ -1,5 +1,13 @@
 fastapi
 uvicorn
 python-multipart
-ultralytics
+ultralytics>=8.4.145
 pillow
+torch
+torchvision
+open_clip_torch
+numpy
+huggingface_hub
+transformers
+timm
+git+https://github.com/ultralytics/CLIP.git

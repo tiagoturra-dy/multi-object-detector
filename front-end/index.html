@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visual Search</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== OVERLAY PANEL (always open) ===== -->
+<div id="dy-img-search-${dyVariationId}">
+  <div class="dy-panel">
+
+    <!-- LEFT SIDE -->
+    <div class="dy-panel-left">
+      <h1 class="dy-panel-title">${Overlay Title}</h1>
+
+      <div class="dy-steps">
+        <div class="dy-step">
+          <div class="dy-step-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect x="6" y="10" width="36" height="28" rx="3" stroke="#bbb" stroke-width="2"/>
+              <path d="M6 34 L16 24 L22 30 L30 20 L42 34" stroke="#bbb" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="34" cy="18" r="3" stroke="#bbb" stroke-width="2"/>
+              <rect x="18" y="32" width="12" height="10" rx="2" stroke="#bbb" stroke-width="2"/>
+              <line x1="24" y1="32" x2="24" y2="42" stroke="#bbb" stroke-width="2"/>
+              <line x1="18" y1="37" x2="30" y2="37" stroke="#bbb" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="dy-step-text">
+            <strong>${Step 1 Title}</strong>
+            <p>${Step 1 Description}</p>
+          </div>
+        </div>
+
+        <div class="dy-step">
+          <div class="dy-step-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="22" cy="22" r="13" stroke="#bbb" stroke-width="2"/>
+              <line x1="31" y1="31" x2="42" y2="42" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="22" cy="22" r="4" fill="#bbb" opacity="0.3"/>
+              <circle cx="22" cy="22" r="1.5" fill="#bbb"/>
+            </svg>
+          </div>
+          <div class="dy-step-text">
+            <strong>${Step 2 Title}</strong>
+            <p>${Step 2 Description}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div class="dy-dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*" hidden />
+        <div class="dy-dropzone-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <rect x="4" y="12" width="32" height="26" rx="3" stroke="#aaa" stroke-width="2"/>
+            <path d="M22 38 L22 26 M22 26 L17 31 M22 26 L27 31" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="20" y="8" width="28" height="22" rx="3" fill="white" stroke="#aaa" stroke-width="2"/>
+            <path d="M34 19 L34 11 M34 11 L29 16 M34 11 L39 16" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="dy-dropzone-label">Drag and drop or <span class="dy-browse-link" id="browseBtn">browse your file here</span></p>
+        <p class="dy-dropzone-hint">Maximum file size: 10mb</p>
+      </div>
+
+      <div class="dy-url-row">
+        <span class="dy-or-divider">or</span>
+        <div class="dy-url-bar">
+          <input type="text" id="urlInput" placeholder="Paste image URL here" />
+          <button id="searchUrlBtn">Search</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="dy-panel-divider"></div>
+
+    <!-- RIGHT SIDE -->
+    <div class="dy-panel-right">
+      <div class="dy-close-wrapper">
+        <div class="dy-close-btn"></div>
+      </div>
+      <p class="dy-gallery-label">${Inspiration images text}</p>
+      <div class="dy-gallery" id="gallery">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== RESULT VIEW ===== -->
+  <div class="dy-result-view dy-hidden" id="resultView">
+    <div class="dy-result-container">
+
+    <!-- LEFT SIDEBAR: Crop area -->
+    <div class="dy-result-sidebar">
+      <div class="dy-image-wrapper" id="imageWrapper">
+        <img id="resultImg" src="" alt="result" crossorigin="anonymous" />
+        <canvas id="overlayCanvas"></canvas>
+        <div id="dotsContainer"></div>
+
+        <!-- Crop overlay (hidden by default) -->
+        <div class="dy-crop-overlay dy-hidden" id="cropOverlay">
+          <div class="dy-crop-box" id="cropBox">
+            <div class="dy-crop-handle tl"></div>
+            <div class="dy-crop-handle tr"></div>
+            <div class="dy-crop-handle bl"></div>
+            <div class="dy-crop-handle br"></div>
+          </div>
+        </div>
+
+        <!-- Crop button -->
+        <button class="dy-crop-btn" id="cropBtn">Crop</button>
+      </div>
+
+      <!-- New Upload -->
+      <div class="dy-new-upload-section">
+        <button class="dy-new-upload-btn" id="newUploadBtn">
+          <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 12.9444V2.05556C14 1.2 13.3 0.5 12.4444 0.5H1.55556C0.7 0.5 0 1.2 0 2.05556V12.9444C0 13.8 0.7 14.5 1.55556 14.5H12.4444C13.3 14.5 14 13.8 14 12.9444ZM4.27778 8.66667L6.22222 11.0078L8.94444 7.5L12.4444 12.1667H1.55556L4.27778 8.66667Z" fill="#252B42"/>
+          </svg>
+          New Image
+        </button>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="dy-filters-section">
+        <h3 class="dy-filters-title">Filters</h3>
+        <div class="dy-filters-container" id="filtersContainer">
+          <!-- Filter options populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTENT: Results -->
+    <div class="dy-result-content">
+      <div class="dy-result-header">
+        <h2 class="dy-result-title">${Result Title}</h2>
+        <div class="dy-result-controls">
+          <div class="dy-sort-dropdown">
+            <select id="sortSelect">
+              <option value="similarity">Most Similar</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="price-low">Price: Low to High</option>
+            </select>
+          </div>
+          <button class="dy-new-search-btn" id="newSearchBtn" title="New search">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13.5 2.5C12.3 1.4 10.7 0.8 9 0.8C5.1 0.8 1.9 3.9 1.9 7.8C1.9 11.7 5.1 14.8 9 14.8C12.5 14.8 15.3 12.3 15.8 9H14C13.5 11.2 11.5 12.8 9 12.8C6.2 12.8 3.9 10.5 3.9 7.8C3.9 5.1 6.2 2.8 9 2.8C10.2 2.8 11.3 3.2 12.2 3.9L10.5 5.5H15.8V0.2L13.5 2.5Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="dy-result-products" id="resultProducts">
+        <!-- Product results populated by JS -->
+      </div>
+    </div>
+
+    </div>
+  </div>
+</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

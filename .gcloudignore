@@ -1,0 +1,33 @@
+# Ignore git files
+.git/
+.gitignore
+.github/
+
+# Ignore local Python virtual environments (Crucial! These are massive)
+venv/
+.venv/
+env/
+ENV/
+
+# Ignore cache folders
+**/__pycache__/
+**.pyc
+.cache/
+
+# Ignore your local training datasets or testing videos
+datasets/
+test_videos/
+images/
+*.mp4
+*.jpg
+*.png
+
+# Ignore IDE settings configuration
+.vscode/
+.idea/
+
+# Ignore FE files
+**/front-end/
+
+# Ignore other files
+README.md
