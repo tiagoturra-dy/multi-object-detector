@@ -1,24 +1,28 @@
 # Multi-Object Detector
 
-A full-stack web application for detecting multiple objects in images using YOLOv8. Upload or provide a URL to an image, and the app will identify and visualize all detected objects with confidence scores.
+A full-stack web application for detecting and searching clothing items in images using YOLOv8 and visual search. Upload or provide a URL to an image, and the app will identify clothing objects, visualize them with detection dots, and search for similar products using a visual search API.
 
 ## Features
 
 - 🖼️ **Image Upload**: Upload images directly or provide a URL
-- 🎯 **Object Detection**: Uses YOLOv8 nano model for fast, accurate detection
-- 📊 **Visual Results**: Interactive visualization with clickable detection dots
-- 🔍 **Confidence Scores**: See detection confidence percentages for each object
-- ✂️ **Crop Tool**: Crop detected objects from the image
-- 🔧 **Configurable API**: Switch between local and remote API endpoints
+- 🎯 **Object Detection**: Uses YOLOv8 (yoloe-26s-seg) for clothing detection
+- 📊 **Visual Results**: Interactive visualization with clickable detection dots and bounding boxes
+- 🔍 **Confidence Scores**: See detection confidence for each identified clothing item
+- ✂️ **Crop Tool**: Crop detected objects and search within regions
+- 🏷️ **Clothing Classification**: Detects specific clothing categories (shirts, pants, shoes, etc.)
+- 🔧 **Configurable APIs**: Connect to custom detection and search endpoints
 - 🌐 **CORS Enabled**: Backend supports cross-origin requests
 - 💾 **Memory Efficient**: Optimized for minimal RAM usage
+- 🎨 **Faceted Search**: Filter results by clothing attributes and price range
 
 ## Project Structure
 
 ```
 multi-object-detector/
 ├── app.py                 # FastAPI backend server
+├── dockerfile             # Docker configuration
 ├── requirements.txt       # Python dependencies
+├── yoloe-26s-seg.pt      # Pre-trained YOLO model
 └── front-end/
     ├── index.html        # Main HTML page
     ├── app.js            # Application logic
@@ -94,14 +98,22 @@ Edit the `CONFIG` object at the top of `app.js`:
 
 ```javascript
 const CONFIG = {
-  apiUrl: "https://multi-object-detector.onrender.com/detect",  // API endpoint
-  apiFileField: "file",                                          // Form field name
-  maxFileSizeBytes: 10 * 1024 * 1024,                           // Max file size (10 MB)
-  galleryImages: [...],                                          // Sample images
-  loadingMessage: "Detecting objects…",                          // Loading text
-  dotSizePx: 22,                                                 // Detection dot size
-  boxStrokeStyle: "rgba(255,255,255,0.9)",                      // Box color
-  boxLineWidth: 2,                                               // Box line width
+  api: {
+    detectUrl: "https://<YOUR_API_ENDPOINT>/detect",  // Detection API endpoint
+    searchUrl: "https://direct.dy-api.com/v2/serve/user/search",            // DY Search API endpoint
+    apiKey: 'your-api-key-here',                                            // API key for search
+  },
+  ui: {
+    maxFileSizeBytes: 10 * 1024 * 1024,  // Max file size (10 MB)
+    dotSizePx: 22,                       // Detection dot size
+    boxStrokeStyle: "rgba(255,255,255,0.9)",  // Detection box color
+    boxLineWidth: 2,                     // Detection box line width
+    boxPaddingPx: 50,                    // Padding around detections for crop
+    loadingMessage: "Loading…",          // Loading indicator text
+  },
+  gallery: {
+    images: [...]  // Sample gallery images
+  }
 };
 ```
 
@@ -121,9 +133,10 @@ Detect objects in an image.
 {
   "items": [
     {
-      "label": "person",
+      "label": "shirt",
       "confidence": 0.95,
-      "box": [x1, y1, x2, y2]
+      "box": [x1, y1, x2, y2],
+      "display": true
     }
   ]
 }
@@ -141,7 +154,8 @@ Health check endpoint.
 **Response:**
 ```json
 {
-  "status": "API online! Envie um POST para /detect"
+  "status": "API online",
+  "endpoint": "/detect"
 }
 ```
 
@@ -159,6 +173,23 @@ Health check endpoint.
 
 ## Deployment
 
+### Deploy to Google Cloud Run
+
+The application is configured to run on Google Cloud Run:
+
+```bash
+# Build and deploy using Cloud Build
+gcloud run deploy yoloe-api \
+  --source . \
+  --platform managed \
+  --region us-central1 \
+  --memory 1Gi \
+  --timeout 300 \
+  --allow-unauthenticated
+```
+
+Update the frontend `detectUrl` in `app.js` with your Cloud Run service URL.
+
 ### Deploy to Render
 
 1. Create a `render.yaml` file in the project root:
@@ -174,20 +205,21 @@ Health check endpoint.
 2. Connect your GitHub repository to Render
 3. Deploy from the dashboard
 
-The default deployment URL is available at: `https://multi-object-detector.onrender.com`
-
 ## Usage Guide
 
 1. **Open the app** in your browser
-2. **Choose an image source**:
+2. **Click the search button** (`.dy-image-search-btn`) to open the overlay
+3. **Choose an image source**:
    - Click "Browse" to upload a file
    - Enter an image URL and click "Search"
    - Select from the gallery of sample images
-3. **Wait for detection** to complete (the spinner shows progress)
-4. **Interact with results**:
-   - Click on detection dots to select and highlight objects
-   - Use the "Crop" button to crop the selected detection
-5. **Start a new search** using the "New Search" button
+4. **Wait for detection** to complete (the spinner shows progress)
+5. **Interact with results**:
+   - Click on detection dots to select and highlight objects with bounding boxes
+   - Use the "Crop" button to crop and search within detected regions
+   - Apply filters using the facet panel on the left
+6. **Sort results** using the dropdown (Most Similar, Price: High to Low, Price: Low to High)
+7. **Close** the overlay by clicking the close button or clicking outside the overlay
 
 ## Performance Tips
 
@@ -198,19 +230,23 @@ The default deployment URL is available at: `https://multi-object-detector.onren
 
 ## Troubleshooting
 
-**"Could not reach the detection API"**
-- Verify the Python server is running
-- Check the API URL in the frontend configuration
+**"Detect API failed" message but search results still show**
+- This is expected behavior. The app gracefully handles detection API failures and continues with search results
+- Check that the `detectUrl` is correctly configured in `app.js`
+- Verify the detection API is running and accessible
+
+**"Search failed" message**
+- Verify the `searchUrl` and `apiKey` are correctly configured in `app.js`
+- Check your API key has valid credentials and quota
 - Ensure CORS is not blocked (should be enabled by default)
 
 **"File exceeds the limit"**
-- Reduce image file size
-- Modify `maxFileSizeBytes` in frontend config or upload size limit in backend
+- Reduce image file size or modify `maxFileSizeBytes` in frontend config
 
-**Model download fails**
-- YOLOv8 model is downloaded on first run (~6 MB)
-- Requires internet connection for initial setup
-- Model is cached locally for subsequent runs
+**Model file not found (yoloe-26s-seg.pt)**
+- Place the pre-trained model file in the project root directory
+- The model file is ~50 MB and contains the clothing detection weights
+- Ensure the filename matches exactly in `app.py`
 
 ## License
 
