@@ -164,7 +164,7 @@ Health check endpoint.
 ### Backend
 - **FastAPI**: Modern web framework
 - **Uvicorn**: ASGI server
-- **YOLOv8**: Object detection model (via ultralytics)
+- **YOLOE 26**: Object detection model (via ultralytics)
 - **Pillow**: Image processing
 - **python-multipart**: File upload support
 

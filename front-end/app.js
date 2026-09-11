@@ -1,71 +1,66 @@
 /* ============================================================
-   CONFIGURATION
-   Edit this object to customise the app without touching
-   the rest of the code.
-   ============================================================ */
-const CONFIG = {
-  /* ──────── API CONFIGURATION ──────── */
-  api: {
-    detectUrl: "${Detection Endpoint}",
-    detectFileField: "file",
-    searchUrl: "${Search API Endpoint}",
-    apiKey: '${API Key}',
-  },
-
-  /* ──────── UI CONFIGURATION ──────── */
-  ui: {
-    maxFileSizeBytes: 10 * 1024 * 1024,
-    dotSizePx: 22,
-    boxStrokeStyle: "rgba(255,255,255,0.9)",
-    boxLineWidth: 2,
-    boxPaddingPx: 50,
-    loadingMessage: "Loading…",
-  },
-
-  /* ──────── GALLERY CONFIGURATION ──────── */
-  gallery: {
-    images: [
-      "${Suggested Image 1}",
-      "${Suggested Image 2}",
-      "${Suggested Image 3}",
-      "${Suggested Image 4}"
-    ],
-  },
-
-  /* ──────── ELEMENT IDs ──────── */
-  elements: {
-    overlay: "dy-img-search-${dyVariationId}",
-    dyCloseButton: '.dy_full_width_notifications_container:has(#dy-img-search-${dyVariationId}) .dy-full-width-notifications-close',
-    fileInput: "fileInput",
-    browseBtn: "browseBtn",
-    dropzone: "dropzone",
-    urlInput: "urlInput",
-    searchUrlBtn: "searchUrlBtn",
-    apiUrl: "apiUrl",
-    gallery: "gallery",
-    resultView: "resultView",
-    resultImg: "resultImg",
-    overlayCanvas: "overlayCanvas",
-    dotsContainer: "dotsContainer",
-    cropBtn: "cropBtn",
-    cropOverlay: "cropOverlay",
-    cropBox: "cropBox",
-    newSearchBtn: "newSearchBtn",
-    imageWrapper: "imageWrapper",
-    resultProducts: "resultProducts",
-    newUploadBtn: "newUploadBtn",
-    sortSelect: "sortSelect",
-    filtersContainer: "filtersContainer",
-    spinner: "spinner",
-    closeWrapper: "closeWrapper",
-  },
-};
-
-/* ============================================================
    APP  (IIFE – no globals leaked beyond CONFIG)
    ============================================================ */
 (function () {
   "use strict";
+
+  /* ──────── API CONFIGURATION ──────── */
+  const CONFIG = {
+    api: {
+      detectUrl: "${Detection Endpoint}",
+      detectFileField: "file",
+      searchUrl: "${Search API Endpoint}",
+      apiKey: '${API Key}',
+    },
+
+    /* ──────── UI CONFIGURATION ──────── */
+    ui: {
+      maxFileSizeBytes: 10 * 1024 * 1024,
+      dotSizePx: 22,
+      boxStrokeStyle: "rgba(255,255,255,0.9)",
+      boxLineWidth: 2,
+      boxPaddingPx: 50,
+      loadingMessage: "Loading…",
+    },
+
+    /* ──────── GALLERY CONFIGURATION ──────── */
+    gallery: {
+      images: [
+        "${Suggested Image 1}",
+        "${Suggested Image 2}",
+        "${Suggested Image 3}",
+        "${Suggested Image 4}"
+      ],
+    },
+
+    /* ──────── ELEMENT IDs ──────── */
+    elements: {
+      overlay: "dy-img-search-${dyVariationId}",
+      dyCloseButton: '.dy_full_width_notifications_container:has(#dy-img-search-${dyVariationId}) .dy-full-width-notifications-close',
+      fileInput: "fileInput",
+      browseBtn: "browseBtn",
+      dropzone: "dropzone",
+      urlInput: "urlInput",
+      searchUrlBtn: "searchUrlBtn",
+      apiUrl: "apiUrl",
+      gallery: "gallery",
+      resultView: "resultView",
+      resultImg: "resultImg",
+      overlayCanvas: "overlayCanvas",
+      dotsContainer: "dotsContainer",
+      cropBtn: "cropBtn",
+      cropOverlay: "cropOverlay",
+      cropBox: "cropBox",
+      newSearchBtn: "newSearchBtn",
+      imageWrapper: "imageWrapper",
+      resultProducts: "resultProducts",
+      newUploadBtn: "newUploadBtn",
+      sortSelect: "sortSelect",
+      filtersContainer: "filtersContainer",
+      spinner: "spinner",
+      closeWrapper: "closeWrapper",
+    },
+  };
 
   /* ────────────────────────── STATE ──────────────────────────── */
   let currentItems = [];    // detected objects returned by the API
@@ -88,18 +83,119 @@ const CONFIG = {
   let cropRect     = { x: 0, y: 0, w: 0, h: 0 };
 
   /* ────────────────────────── ELEMENT REFS ──────────────────────── */
-  /* Only overlay queries document; all others query from their containers */
-  const overlay = document.getElementById(CONFIG.elements.overlay);
-  const panel = overlay.querySelector('.dy-panel');
+  /* Helper to get overlay - queries fresh each time in case React remounts it */
+  function getOverlay() {
+    return document.getElementById(CONFIG.elements.overlay);
+  }
+  
+  function getPanel() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('.dy-panel') : null;
+  }
+  
+  function getFileInput() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.fileInput) : null;
+  }
+  
+  function getBrowseBtn() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.browseBtn) : null;
+  }
+  
+  function getDropzone() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.dropzone) : null;
+  }
+  
+  function getUrlInput() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.urlInput) : null;
+  }
+  
+  function getSearchUrlBtn() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.searchUrlBtn) : null;
+  }
+  
+  function getGalleryEl() {
+    const ov = getOverlay();
+    return ov ? ov.querySelector('#' + CONFIG.elements.gallery) : null;
+  }
+  
+  let overlay = getOverlay();
+  let panel = null;
   let resultView = null;
 
-  /* Overlay elements */
-  const fileInput = overlay.querySelector('#' + CONFIG.elements.fileInput);
-  const browseBtn = overlay.querySelector('#' + CONFIG.elements.browseBtn);
-  const dropzone = overlay.querySelector('#' + CONFIG.elements.dropzone);
-  const urlInput = overlay.querySelector('#' + CONFIG.elements.urlInput);
-  const searchUrlBtn = overlay.querySelector('#' + CONFIG.elements.searchUrlBtn);
-  const galleryEl = overlay.querySelector('#' + CONFIG.elements.gallery);
+  // Attach listeners to upload/browse elements
+  function attachUploadListeners() {
+    const browseBtn = getBrowseBtn();
+    const fileInput = getFileInput();
+    const dropzone = getDropzone();
+    if (!browseBtn || !fileInput || !dropzone) return;
+    
+    if (!browseBtn._uploadListenerAttached) {
+      browseBtn._uploadListenerAttached = true;
+      browseBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+    
+    if (!dropzone._uploadListenerAttached) {
+      dropzone._uploadListenerAttached = true;
+      dropzone.addEventListener("click", () => fileInput.click());
+    }
+  }
+  
+  // Attach listeners to file input and URL input
+  function attachFileChangeListeners() {
+    const fileInput = getFileInput();
+    const dropzone = getDropzone();
+    const urlInput = getUrlInput();
+    const searchUrlBtn = getSearchUrlBtn();
+    
+    if (fileInput && !fileInput._changeListenerAttached) {
+      fileInput._changeListenerAttached = true;
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length) processFile(fileInput.files[0]);
+      });
+    }
+    
+    if (dropzone && !dropzone._dragListenerAttached) {
+      dropzone._dragListenerAttached = true;
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dy-drag-over");
+      });
+      dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dy-drag-over"));
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dy-drag-over");
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) processFile(file);
+      });
+    }
+    
+    if (searchUrlBtn && !searchUrlBtn._clickListenerAttached) {
+      searchUrlBtn._clickListenerAttached = true;
+      searchUrlBtn.addEventListener("click", () => {
+        const urlInput = getUrlInput();
+        const url = urlInput.value.trim();
+        if (url) loadFromUrl(url);
+      });
+    }
+    
+    if (urlInput && !urlInput._keyListenerAttached) {
+      urlInput._keyListenerAttached = true;
+      urlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const searchUrlBtn = getSearchUrlBtn();
+          searchUrlBtn.click();
+        }
+      });
+    }
+  }
 
   /* Result view elements (lazy-loaded after resultView is set) */
   let resultImg, overlayCanvas, dotsContainer, cropBtn, cropOverlay, cropBox;
@@ -107,7 +203,12 @@ const CONFIG = {
   
   function initResultViewElements() {
     if (!resultView) {
-      resultView = overlay.querySelector('#' + CONFIG.elements.resultView);
+      const currentOverlay = getOverlay();
+      if (!currentOverlay) {
+        console.error("Overlay element not found");
+        return;
+      }
+      resultView = currentOverlay.querySelector('#' + CONFIG.elements.resultView);
       if (!resultView) {
         console.error("resultView element not found with ID:", CONFIG.elements.resultView);
         return;
@@ -147,6 +248,8 @@ const CONFIG = {
 
   /* ─────────────────────────── GALLERY ─────────────────────────── */
   function initGallery() {
+    const galleryEl = getGalleryEl();
+    if (!galleryEl) return;
     galleryEl.innerHTML = "";
     CONFIG.gallery.images.forEach((src, i) => {
       const item = document.createElement("div");
@@ -162,41 +265,8 @@ const CONFIG = {
   }
 
   /* ──────────────────────── UPLOAD / URL ────────────────────────── */
-  browseBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    fileInput.click();
-  });
-
-  dropzone.addEventListener("click", () => fileInput.click());
-
-  fileInput.addEventListener("change", () => {
-    if (fileInput.files.length) processFile(fileInput.files[0]);
-  });
-
-  dropzone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropzone.classList.add("dy-drag-over");
-  });
-
-  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dy-drag-over"));
-
-  dropzone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropzone.classList.remove("dy-drag-over");
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) processFile(file);
-  });
-
-  searchUrlBtn.addEventListener("click", () => {
-    const url = urlInput.value.trim();
-    if (url) loadFromUrl(url);
-  });
-
-  urlInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") searchUrlBtn.click();
-  });
-
-  /* ──────────────────────── PROCESS FILE ────────────────────────── */
+  // Event listeners are now dynamically attached via attachUploadListeners() 
+  // and attachFileChangeListeners() when overlay is opened
   async function processFile(file) {
     try {
       if (file.size > CONFIG.ui.maxFileSizeBytes) {
@@ -415,7 +485,8 @@ formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
     cropBtn.textContent = "Crop";
 
     resultImg.src = imageUrl;
-    panel.classList.add("dy-hidden");
+    const freshPanel = getPanel();
+    if (freshPanel) freshPanel.classList.add("dy-hidden");
     resultView.classList.remove("dy-hidden");
   }
 
@@ -889,13 +960,17 @@ formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
     }
     newSearchBtn.addEventListener("click", function() {
       resultView.classList.add("dy-hidden");
-      panel.classList.remove("dy-hidden");
-      fileInput.value = "";
-      urlInput.value  = "";
+      const freshPanel = getPanel();
+      if (freshPanel) freshPanel.classList.remove("dy-hidden");
+      const freshFileInput = getFileInput();
+      const freshUrlInput = getUrlInput();
+      if (freshFileInput) freshFileInput.value = "";
+      if (freshUrlInput) freshUrlInput.value = "";
     });
 
     newUploadBtn.addEventListener("click", function() {
-      fileInput.click();
+      const freshFileInput = getFileInput();
+      if (freshFileInput) freshFileInput.click();
     });
 
     sortSelect.addEventListener("change", function() {
@@ -1039,40 +1114,129 @@ formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
   }
   /* ─────────────────────── INIT ─────────────────────────────────── */
   const variationId = '${dyVariationId}'
-  if (variationId)
+  
+  // Get fresh overlay reference and initialize
+  overlay = getOverlay();
+  
+  // Start overlay hidden
+  if (overlay && variationId) {
     overlay.classList.add("dy-hidden");
-  panel.classList.remove("dy-hidden");
+  }
+
+  const freshPanel = getPanel();
+  if (freshPanel) freshPanel.classList.remove("dy-hidden");
   initGallery();
+  attachUploadListeners();
+  attachFileChangeListeners();
   
-  // Hide overlay when clicking .dy-close-btn or outside overlay
-  function hideOverlay() {
-    overlay.classList.add("dy-hidden");
-  }
-  
-  const closeBtn = document.querySelector(".dy-close-btn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", hideOverlay);
-  }
-  
-  overlay.addEventListener("click", function(e) {
-    if (e.target === overlay) {
-      hideOverlay();
+  // Show overlay
+  function showOverlay() {
+    const ov = getOverlay();
+    if (ov) {
+      ov.classList.remove("dy-hidden");
+      ov.style.display = '';
+      ov.style.visibility = '';
+      
+      // Attach close handlers after showing
+      attachCloseHandlers();
     }
-  });
+  }
   
-  // Observe DOM for dynamically loaded .dy-image-search-btn
-  function attachSearchBtnListener() {
-    const searchBtn = document.querySelector(".dy-image-search-btn");
-    if (searchBtn && !searchBtn._searchListenerAttached) {
-      searchBtn._searchListenerAttached = true;
-      searchBtn.addEventListener("click", function() {
-        overlay.classList.remove("dy-hidden");
+  // Hide overlay
+  function hideOverlay() {
+    const ov = getOverlay();
+    if (ov) {
+      ov.classList.add("dy-hidden");
+    }
+  }
+  
+  // Attach close button and outside click listeners
+  function attachCloseHandlers() {
+    const closeBtn = document.querySelector(".dy-close-btn");
+    if (closeBtn && !closeBtn._closeListenerAttached) {
+      closeBtn._closeListenerAttached = true;
+      closeBtn.addEventListener("click", hideOverlay);
+    }
+    
+    // Attach click handler to overlay element itself
+    const ov = getOverlay();
+    if (ov && !ov._bgClickHandlerAttached) {
+      ov._bgClickHandlerAttached = true;
+      ov.addEventListener("click", function(e) {
+        // Close if click is NOT on interactive content
+        const panel = getPanel();
+        const resultContainer = ov.querySelector(".dy-result-container");
+        
+        const isClickOnPanel = panel && panel.contains(e.target);
+        const isClickOnResultContainer = resultContainer && resultContainer.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnResultContainer) {
+          hideOverlay();
+        }
+      });
+    }
+    
+    // Attach Escape key handler
+    if (!document._escapeKeyAttached) {
+      document._escapeKeyAttached = true;
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+          const ov = getOverlay();
+          if (ov && !ov.classList.contains("dy-hidden")) {
+            hideOverlay();
+          }
+        }
       });
     }
   }
   
+  attachCloseHandlers();
+  
+  // Re-attach overlay listeners after React remount
+  function reattachOverlayListeners() {
+    const fileInput = getFileInput();
+    const browseBtn = getBrowseBtn();
+    const dropzone = getDropzone();
+    const urlInput = getUrlInput();
+    const searchUrlBtn = getSearchUrlBtn();
+    const closeBtn = document.querySelector(".dy-close-btn");
+    const ov = getOverlay();
+    
+    if (fileInput) fileInput._changeListenerAttached = false;
+    if (browseBtn) browseBtn._uploadListenerAttached = false;
+    if (dropzone) dropzone._uploadListenerAttached = false;
+    if (dropzone) dropzone._dragListenerAttached = false;
+    if (urlInput) urlInput._keyListenerAttached = false;
+    if (searchUrlBtn) searchUrlBtn._clickListenerAttached = false;
+    if (closeBtn) closeBtn._closeListenerAttached = false;
+    if (ov) ov._bgClickHandlerAttached = false;
+    
+    attachUploadListeners();
+    attachFileChangeListeners();
+    attachCloseHandlers();
+  }
+  
+  // Search button click - show overlay
+  function attachSearchBtnListener() {
+    const searchBtns = document.querySelectorAll(".dy-image-search-btn");
+    searchBtns.forEach(function(searchBtn) {
+      if (!searchBtn._searchListenerAttached) {
+        searchBtn._searchListenerAttached = true;
+        searchBtn.addEventListener("click", function(e) {
+          if (searchBtn.contains(e.target)) {
+            e.preventDefault();
+            e.stopPropagation();
+            showOverlay();
+            reattachOverlayListeners();
+          }
+        });
+      }
+    });
+  }
+  
   attachSearchBtnListener();
   
+  // Re-attach search listeners when DOM changes
   const observer = new MutationObserver(function() {
     attachSearchBtnListener();
   });

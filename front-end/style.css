@@ -33,6 +33,19 @@
   z-index: 100;
   font-family: var(--font-family);
   
+  .dy-panel,
+  #resultView,
+  .dy-close-btn,
+  .dy-detection-dot-wrapper,
+  input,
+  button,
+  select,
+  textarea,
+  label,
+  a {
+    pointer-events: auto;
+  }
+  
   .dy-close-btn {
     position: absolute;
     top: 16px;
