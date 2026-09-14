@@ -483,6 +483,10 @@ formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
     overlayCanvas.getContext("2d").clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
     cropOverlay.classList.add("dy-hidden");
     cropBtn.textContent = "Crop";
+    
+    if (resultProducts) resultProducts.innerHTML = "";
+    const filtersContainer = document.getElementById("filtersContainer");
+    if (filtersContainer) filtersContainer.innerHTML = "";
 
     resultImg.src = imageUrl;
     const freshPanel = getPanel();
