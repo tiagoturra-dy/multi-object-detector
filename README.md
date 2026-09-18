@@ -179,13 +179,8 @@ The application is configured to run on Google Cloud Run:
 
 ```bash
 # Build and deploy using Cloud Build
-gcloud run deploy yoloe-api \
-  --source . \
-  --platform managed \
-  --region us-central1 \
-  --memory 1Gi \
-  --timeout 300 \
-  --allow-unauthenticated
+
+gcloud run deploy yoloe-api --source . --platform managed --memory 4Gi --cpu 2 --allow-unauthenticated --timeout 300 --min-instances=0 --max-instances=3 --set-env-vars="DETECT_API_KEY=$(gcloud secrets versions access latest --secret='object-detector-key')" --allow-unauthenticated
 ```
 
 Update the frontend `detectUrl` in `app.js` with your Cloud Run service URL.

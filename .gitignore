@@ -1,3 +1,4 @@
 .cache/
 *.pt
 mobileclip*.ts
+.env

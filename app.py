@@ -22,10 +22,12 @@ def patched_torch_load(f, *args, **kwargs):
   return _original_torch_load(f, *args, **kwargs)
 torch.load = patched_torch_load
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Annotated
 from PIL import Image
 from ultralytics import YOLOE
+import secrets
 
 # ============================================================================
 # CONFIGURATION - All settings in one place
@@ -56,6 +58,9 @@ CONFIG = {
 # Optimize memory usage
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MALLOC_TRIM_THRESHOLD_"] = "0"
+
+# API Key configuration
+API_KEY = os.environ.get("DETECT_API_KEY", secrets.token_urlsafe(32))
 
 # Global model instance
 model = None
@@ -94,10 +99,15 @@ app = FastAPI(title="Multi-Object Detection API", lifespan=lifespan)
 app.add_middleware(
   CORSMiddleware,
   allow_origins=["*"],
-  allow_credentials=True,
-  allow_methods=["*"],
+  allow_credentials=False,
+  allow_methods=["GET", "POST"],
   allow_headers=["*"],
 )
+
+async def verify_api_key(x_api_key: Annotated[str, Header()]) -> str:
+  if x_api_key != API_KEY:
+    raise HTTPException(status_code=403, detail="Invalid API key")
+  return x_api_key
 
 
 @app.get("/")
@@ -105,7 +115,10 @@ def home():
   return {"status": "API online", "endpoint": "/detect"}
 
 @app.post("/detect")
-async def detect_objects(file: UploadFile = File(...)):
+async def detect_objects(
+  file: UploadFile = File(...),
+  api_key: str = Depends(verify_api_key)
+):
   try:
     logger.info(f"Processing file: {file.filename}")
     image_bytes = await file.read()

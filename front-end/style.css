@@ -10,6 +10,8 @@
   --radius-md: 8px;
   --shadow-md: 0 8px 40px rgba(0,0,0,0.18);
   --shadow-sm: 0 4px 16px rgba(0,0,0,0.08);
+  --max-overlay-height: 50vh;
+  --max-result-height: 75vh;
 
   /* Color Variables */
   --title-color: #161616;
@@ -308,6 +310,8 @@
     box-shadow: var(--shadow-md);
     max-width: 1200px;
     width: min(1200px, 96vw);
+    max-height: var(--max-result-height);
+    overflow: auto;
   }
 
   .dy-result-sidebar {
@@ -322,6 +326,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
   }
 
   .dy-result-header {
@@ -593,6 +598,7 @@
     background: #eee;
     user-select: none;
     max-height: 100%;
+    min-height: 420px;
 
     & img {
       display: block;
@@ -667,7 +673,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    max-height: 70vh;
+    max-height: var(--max-overlay-height);
     overflow: hidden;
 
     &.dy-hidden {
@@ -848,7 +854,7 @@
   #dy-img-search-overlay {
     .dy-result-container {
       flex-direction: column;
-      max-height: 70vh;
+      max-height: var(--max-result-height);
       overflow: auto;
     }
 

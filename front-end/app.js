@@ -9,6 +9,7 @@
     api: {
       detectUrl: "${Detection Endpoint}",
       detectFileField: "file",
+      detectApiKey: '${Detection API Key}',
       searchUrl: "${Search API Endpoint}",
       apiKey: '${API Key}',
     },
@@ -307,54 +308,49 @@
       
       lastImageBase64 = imageBase64;
 
-      // Call both detect and search APIs in parallel
-      console.log("Calling detect and search APIs...");
-      const results = await Promise.allSettled([
-        callDetectApi(imageBase64),
-        callSearchApi(imageBase64, [])
-      ]);
+      console.log("Calling detect and search APIs independently...");
+      
+      // Detect API - independent render
+      callDetectApi(imageBase64)
+        .then(detectResponse => {
+          if (detectResponse.items) {
+            currentItems = detectResponse.items;
+            console.log("Stored currentItems:", currentItems);
+            if (currentItems.length > 0) {
+              console.log("Rendering detections");
+              renderDetectionsWithDots(currentItems);
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Detect API failed:", err);
+          currentItems = [];
+        });
 
-      const detectResult = results[0];
-      const searchResult = results[1];
+      // Search API - independent render
+      callSearchApi(imageBase64, [])
+        .then(searchResponse => {
+          removeSpinner();
+          if (searchResponse.choices && searchResponse.choices.length > 0) {
+            const choice = searchResponse.choices[0];
+            const { payload: { data: { slots, facets } } } = choice.variations[0];
+            currentSlots = slots;
+            currentFacets = facets || [];
+            console.log("Rendering facets and products");
+            renderFacets(currentFacets);
+            renderProducts(currentSlots);
+          } else {
+            showError("No results found. Try another image.");
+          }
+        })
+        .catch(err => {
+          removeSpinner();
+          console.error("Search API failed:", err);
+          showError("Search failed. Please try again.");
+        });
 
-      console.log("API results:", { detectResult, searchResult });
-      removeSpinner();
-
-      // Handle detect results - if failed, log error and continue
-      let detectResponse = null;
-      if (detectResult.status === 'fulfilled') {
-        detectResponse = detectResult.value;
-        if (detectResponse.items) {
-          currentItems = detectResponse.items;
-          console.log("Stored currentItems:", currentItems);
-        } else {
-          console.warn("No items in detectResponse", detectResponse);
-        }
-      } else {
-        console.error("Detect API failed:", detectResult.reason);
-        currentItems = [];
-      }
-
-      // Handle search results
-      if (searchResult.status === 'fulfilled') {
-        const searchResponse = searchResult.value;
-        if (searchResponse.choices && searchResponse.choices.length > 0) {
-          const choice = searchResponse.choices[0];
-          const { payload: { data: { slots, facets } } } = choice.variations[0];
-          currentSlots = slots;
-          currentFacets = facets || [];
-          console.log("About to render detections with items:", currentItems);
-          renderDetectionsWithDots(currentItems);
-          renderFacets(currentFacets);
-          renderProducts(currentSlots);
-        } else {
-          showError("No results found. Try another image.");
-        }
-      } else {
-        console.error("Search API failed:", searchResult.reason);
-        showError("Search failed. Please try again.");
-      }
     } catch (err) {
+      removeSpinner();
       console.error("callDetectionApi error:", err);
       showError(err.message || "Failed to process image");
     }
@@ -364,9 +360,15 @@
     const apiUrl = CONFIG.api.detectUrl;
     console.log("Calling detect API at:", apiUrl);
     const formData = new FormData();
-formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
+    formData.append('file', dataURLtoBlob('data:image/jpeg;base64,' + imageBase64));
     
-    const response = await fetch(apiUrl, { method: "POST", body: formData });
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "X-API-Key": CONFIG.api.detectApiKey
+      },
+      body: formData
+    });
     if (!response.ok) throw new Error('Detect API: HTTP ' + response.status);
     const result = await response.json();
     console.log("Detect API response:", result);
