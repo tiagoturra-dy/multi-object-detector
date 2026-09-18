@@ -100,9 +100,13 @@ app.add_middleware(
   CORSMiddleware,
   allow_origins=["*"],
   allow_credentials=False,
-  allow_methods=["GET", "POST"],
-  allow_headers=["*"],
+  allow_methods=["GET", "POST", "OPTIONS"],
+  allow_headers=["Content-Type", "X-API-Key"],
 )
+
+@app.options("/{full_path:path}")
+async def preflight_handler(full_path: str):
+  return {}
 
 async def verify_api_key(x_api_key: Annotated[str, Header()]) -> str:
   if x_api_key != API_KEY:

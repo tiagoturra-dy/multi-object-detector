@@ -31,3 +31,7 @@ images/
 
 # Ignore other files
 README.md
+
+# Ignore AI models
+yoloe-26s-seg.pt
+mobileclip2_b.ts
